@@ -44,6 +44,69 @@ AddEventHandler('inventory:server:CraftItems', function(itemName, itemCosts, amo
 	end
 end)
 
+RegisterServerEvent("inventory:server:GiveItem")
+AddEventHandler('inventory:server:GiveItem', function(name, inventory, item, amount)
+	local src = source
+	local Player = QBCore.Functions.GetPlayer(src)
+	local OtherPlayer = QBCore.Functions.GetPlayer(tonumber(name))
+	local Target = OtherPlayer.PlayerData.charinfo.firstname..' '..OtherPlayer.PlayerData.charinfo.lastname
+	local YourName = Player.PlayerData.charinfo.firstname..' '..Player.PlayerData.charinfo.lastname
+	if amount ~= 0 then
+		if Player.Functions.RemoveItem(item.name, amount,false, item.info) and OtherPlayer.Functions.AddItem(item.name, amount,false, item.info) then
+			TriggerClientEvent('QBCore:Notify', src, "You Sent "..item.label..' To '..Target)
+			TriggerClientEvent('inventory:client:ItemBox',src, QBCore.Shared.Items[item.name], "remove")
+			TriggerClientEvent('QBCore:Notify', name, "You Received "..item.label..' From '..YourName)
+			TriggerClientEvent('inventory:client:ItemBox',name, QBCore.Shared.Items[item.name], "add")
+		end
+	end
+end)
+
+QBCore.Commands.Add("giveitem", "Give item to a player", {{name="id", help="Plaer ID"},{name="item", help="Name of the item (not a label)"}, {name="amount", help="Amount of items"}}, true, function(source, args)
+	local Player = QBCore.Functions.GetPlayer(tonumber(args[1]))
+	local amount = tonumber(args[3])
+	local itemData = QBCore.Shared.Items[tostring(args[2]):lower()]
+	if Player ~= nil then
+		if amount > 0 then
+			if itemData ~= nil then
+				-- check iteminfo
+				local info = {}
+				if itemData["name"] == "id_card" then
+					info.citizenid = Player.PlayerData.citizenid
+					info.firstname = Player.PlayerData.charinfo.firstname
+					info.lastname = Player.PlayerData.charinfo.lastname
+					info.birthdate = Player.PlayerData.charinfo.birthdate
+					info.gender = Player.PlayerData.charinfo.gender
+					info.nationality = Player.PlayerData.charinfo.nationality
+					info.job = Player.PlayerData.job.label
+				elseif itemData["type"] == "weapon" then
+					amount = 1
+					info.serie = tostring(Config.RandomInt(2) .. Config.RandomStr(3) .. Config.RandomInt(1) .. Config.RandomStr(2) .. Config.RandomInt(3) .. Config.RandomStr(4))
+				elseif itemData["name"] == "harness" then
+					info.uses = 20
+				elseif itemData["name"] == "markedbills" then
+					info.worth = math.random(5000, 10000)
+				elseif itemData["name"] == "labkey" then
+					info.lab = exports["qb-methlab"]:GenerateRandomLab()
+				elseif itemData["name"] == "printerdocument" then
+					info.url = "https://cdn.discordapp.com/attachments/645995539208470549/707609551733522482/image0.png"
+				end
+
+				if Player.Functions.AddItem(itemData["name"], amount, false, info) then
+					TriggerClientEvent('QBCore:Notify', source, "You have givwen " ..GetPlayerName(tonumber(args[1])).." " .. itemData["name"] .. " ("..amount.. ")", "success")
+				else
+					TriggerClientEvent('QBCore:Notify', source,  "Can't give item!", "error")
+				end
+			else
+				TriggerClientEvent('chatMessage', source, "SYSTEM", "error", "Item doesn't exist!")
+			end
+		else
+			TriggerClientEvent('chatMessage', source, "SYSTEM", "error", "Amount must be higher than 0!")
+		end
+	else
+		TriggerClientEvent('chatMessage', source, "SYSTEM", "error", "Player is not online!")
+	end
+end, "admin")
+
 RegisterServerEvent('inventory:server:CraftAttachment')
 AddEventHandler('inventory:server:CraftAttachment', function(itemName, itemCosts, amount, toSlot, points)
 	local src = source
@@ -1394,7 +1457,7 @@ function CreateNewDrop(source, fromSlot, toSlot, itemAmount)
 			TriggerClientEvent('Radio.Set', source, false)
 		end
 	else
-		TriggerClientEvent("QBCore:Notify", source, "You don't have this item!", "error")
+		TriggerClientEvent("QBCore:Notify", src, "You don't have this item!", "error")
 		return
 	end
 end
@@ -1420,7 +1483,7 @@ QBCore.Commands.Add("resetinv", "Reset Inventory (Admin Only)", {{name="type", h
 			TriggerClientEvent('QBCore:Notify', source,  "Not a valid type..", "error")
 		end
 	else
-		TriggerClientEvent('QBCore:Notify', source,  "Arguments not filled out correctly..", "error")
+		TriggerClientEvent('QBCore:Notify', source,  "Argumenten not filled out correctly..", "error")
 	end
 end, "admin")
 
@@ -1432,7 +1495,7 @@ QBCore.Commands.Add("rob", "Rob Player", {}, false, function(source, args)
 	TriggerClientEvent("police:client:RobPlayer", source)
 end)
 
-QBCore.Commands.Add("giveitem", "Give An Item (Admin Only)", {{name="id", help="Player ID"},{name="item", help="Name of the item (not a label)"}, {name="amount", help="Amount of items"}}, true, function(source, args)
+QBCore.Commands.Add("giveitem", "Give An Item (Admin Only)", {{name="id", help="Plaer ID"},{name="item", help="Name of the item (not a label)"}, {name="amount", help="Amount of items"}}, true, function(source, args)
 	local Player = QBCore.Functions.GetPlayer(tonumber(args[1]))
 	local amount = tonumber(args[3])
 	local itemData = QBCore.Shared.Items[tostring(args[2]):lower()]
@@ -1508,13 +1571,14 @@ end)
 
 QBCore.Functions.CreateUseableItem("driver_license", function(source, item)
 	for k, v in pairs(QBCore.Functions.GetPlayers()) do
+		local character = QBCore.Functions.GetPlayer(source)
 		local PlayerPed = GetPlayerPed(source)
 		local TargetPed = GetPlayerPed(v)
 		local dist = #(GetEntityCoords(PlayerPed) - GetEntityCoords(TargetPed))
 		if dist < 3.0 then
 			TriggerClientEvent('chat:addMessage', v,  {
 				template = '<div class="chat-message advert"><div class="chat-message-body"><strong>{0}:</strong><br><br> <strong>First Name:</strong> {1} <br><strong>Last Name:</strong> {2} <br><strong>Birth Date:</strong> {3} <br><strong>Licenses:</strong> {4}</div></div>',
-				args = {'Drivers License', item.info.firstname, item.info.lastname, item.info.birthdate, item.info.type}
+				args = {'Drivers License', character.PlayerData.charinfo.firstname, character.PlayerData.charinfo.lastname, character.PlayerData.charinfo.birthdate, item.info.type}
 			})
 		end
 	end
@@ -1522,17 +1586,18 @@ end)
 
 QBCore.Functions.CreateUseableItem("id_card", function(source, item)
 	for k, v in pairs(QBCore.Functions.GetPlayers()) do
+		local character = QBCore.Functions.GetPlayer(source)
 		local PlayerPed = GetPlayerPed(source)
 		local TargetPed = GetPlayerPed(v)
 		local dist = #(GetEntityCoords(PlayerPed) - GetEntityCoords(TargetPed))
 		if dist < 3.0 then
 			local gender = "Man"
-			if item.info.gender == 1 then
+			if character.PlayerData.charinfo.gender == 1 then
 				gender = "Woman"
 			end
 			TriggerClientEvent('chat:addMessage', v,  {
 				template = '<div class="chat-message advert"><div class="chat-message-body"><strong>{0}:</strong><br><br> <strong>Civ ID:</strong> {1} <br><strong>First Name:</strong> {2} <br><strong>Last Name:</strong> {3} <br><strong>Birthdate:</strong> {4} <br><strong>Gender:</strong> {5} <br><strong>Nationality:</strong> {6}</div></div>',
-				args = {'ID Card', item.info.citizenid, item.info.firstname, item.info.lastname,item.info.birthdate, gender, item.info.nationality}
+				args = {'ID Card', character.PlayerData.citizenid, character.PlayerData.charinfo.firstname, character.PlayerData.charinfo.lastname, character.PlayerData.charinfo.birthdate, gender, character.PlayerData.charinfo.nationality}
 			})
 		end
 	end

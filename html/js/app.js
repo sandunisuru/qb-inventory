@@ -1,4 +1,4 @@
-var InventoryOption = "120, 10, 20";
+var InventoryOption = "11, 26, 97";
 
 var totalWeight = 0;
 var totalWeightOther = 0;
@@ -19,7 +19,6 @@ var selectedItem = null;
 var IsDragging = false;
 
 $(document).on('keydown', function() {
-    if (event.repeat) { return }
     switch(event.keyCode) {
         case 27: // ESC
             Inventory.Close();
@@ -129,6 +128,26 @@ $(document).on('mousedown', '.item-slot', function(event){
     }
 });
 
+$("#item-give").droppable({
+    hoverClass: 'button-hover',
+    drop: function(event, ui) {
+        setTimeout(function(){
+            IsDragging = false;
+        }, 300)
+        fromData = ui.draggable.data("item");
+        fromInventory = ui.draggable.parent().attr("data-inventory");
+        amount = $("#item-amount").val();
+        if(fromData.amount > 0) {
+            $.post("https://qb-inventory/GiveItem", JSON.stringify({
+                inventory: fromInventory,
+                item: fromData,
+                amount: parseInt(amount),
+            }));
+            Inventory.Close();
+        }
+    }
+});
+
 $(document).on("click", ".item-slot", function(e){
     e.preventDefault();
     var ItemData = $(this).data("item");
@@ -178,8 +197,8 @@ $(document).on("click", ".item-slot", function(e){
 
 $(document).on('click', '.weapon-attachments-back', function(e){
     e.preventDefault();
-    $("#qbcore-inventory").css({"display":"block"});
-    $("#qbcore-inventory").animate({
+    $("#qbus-inventory").css({"display":"block"});
+    $("#qbus-inventory").animate({
         left: 0+"vw"
     }, 200);
     $(".weapon-attachments-container").animate({
@@ -292,10 +311,10 @@ $(document).on('click', '#weapon-attachments', function(e){
     e.preventDefault();
     if (!Inventory.IsWeaponBlocked(ClickedItemData.name)) {
         $(".weapon-attachments-container").css({"display":"block"})
-        $("#qbcore-inventory").animate({
+        $("#qbus-inventory").animate({
             left: 100+"vw"
         }, 200, function(){
-            $("#qbcore-inventory").css({"display":"none"})
+            $("#qbus-inventory").css({"display":"none"})
         });
         $(".weapon-attachments-container").animate({
             left: 0+"vw"
@@ -405,7 +424,7 @@ function handleDragDrop() {
             var itemData = $(this).data("item");
             var dragAmount = $("#item-amount").val();
             if (!itemData.useable) {
-                $("#item-use").css("background", "rgba(35,35,35, 0.5");
+                $("#item-use").css("background", "rgba(32, 68, 228, 0.5");
             }
 
             if ( dragAmount == 0) {
@@ -525,7 +544,7 @@ function handleDragDrop() {
             fromInventory = ui.draggable.parent().attr("data-inventory");
             amount = $("#item-amount").val();
             if (amount == 0) {amount=fromData.amount}
-            $(this).css("background", "rgba(35,35,35, 0.7");
+            $(this).css("background", "rgba(32, 68, 228, 0.7");
             $.post("https://qb-inventory/DropItem", JSON.stringify({
                 inventory: fromInventory,
                 item: fromData,
@@ -1322,7 +1341,7 @@ var requiredItemOpen = false;
             requiredItemOpen = false;
         }
 
-        $("#qbcore-inventory").fadeIn(300);
+        $("#qbus-inventory").fadeIn(300);
         if(data.other != null && data.other != "") {
             $(".other-inventory").attr("data-inventory", data.other.name);
         } else {
@@ -1350,7 +1369,7 @@ var requiredItemOpen = false;
                 $(".other-inventory").append('<div class="item-slot" data-slot="' + i + '"><div class="item-slot-img"></div><div class="item-slot-label"><p>&nbsp;</p></div></div>');
             }
             $(".other-inventory .item-slot").css({
-                "background-color": "rgba(120, 10, 20, 0.05)"
+                "background-color": "rgba(32, 68, 228, 0.05)"
             });
         }
 
@@ -1449,7 +1468,7 @@ var requiredItemOpen = false;
         $(".item-slot").css("border", "1px solid rgba(255, 255, 255, 0.1)");
         $(".ply-hotbar-inventory").css("display", "block");
         $(".ply-iteminfo-container").css("display", "none");
-        $("#qbcore-inventory").fadeOut(300);
+        $("#qbus-inventory").fadeOut(300);
         $(".combine-option-container").hide();
         $(".item-slot").remove();
         if ($("#rob-money").length) {
@@ -1458,7 +1477,7 @@ var requiredItemOpen = false;
         $.post("https://qb-inventory/CloseInventory", JSON.stringify({}));
 
         if (AttachmentScreenActive) {
-            $("#qbcore-inventory").css({"left": "0vw"});
+            $("#qbus-inventory").css({"left": "0vw"});
             $(".weapon-attachments-container").css({"left": "-100vw"});
             AttachmentScreenActive = false;
         }

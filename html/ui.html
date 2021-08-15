@@ -14,8 +14,8 @@
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     </head>
-    <body style="background-color: rgba(0,0,0,0); font-family: 'Roboto', sans-serif !important;">
-        <div id="qbcore-inventory">
+    <body style="background-color: rgba(0, 0, 0, 0); font-family: 'Roboto', sans-serif !important;">
+        <div id="qbus-inventory">
             <div class="inventory-info">
                 <div class="player-inv-info">
                     <span id="player-inv-label">Player Inventory</span><br>
@@ -66,8 +66,16 @@
                 </div>
                 <div class="inv-options">
                     <div class="inv-options-list">
-                        <input type="number" id="item-amount" class="inv-option-item" min=0 value="0" oninput="validity.valid||(value='');"></input>
-                        <div class="inv-option-item" id="item-use"><p>USE</p></div>
+                        <input type="number" id="item-amount" class="inv-option-item2" min=0 value="0" oninput="validity.valid||(value='');"></input>
+                        <!-- <div class="inv-option-item" id="item-use"><i class="fa fa-lightbulb"></i></div> -->
+                        <div id="item-use" class="inv-option-item">
+                            <i class="fas fa-hand-holding fa-5x"></i>
+                            <div>Use</div>
+                        </div>
+                        <div class="inv-option-item-give" id="item-give">
+                            <i class="fas fa-gifts fa-5x"></i>
+                            <div>Give</div>
+                        </div>
                         <!-- <div class="inv-option-item" id="rob-money"><p>NEEM GELD</p></div> -->
                         <!-- <div class="inv-option-item" id="weapon-attachments"><p>ATTACHMENTS</p></div> -->
                     </div>

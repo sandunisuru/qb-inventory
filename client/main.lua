@@ -110,14 +110,9 @@ Citizen.CreateThread(function()
     end
 end)
 
--- CloseInventory very rare if scuff 
-RegisterCommand('closeinv', function()
-    closeInventory()
-end, false)
-
 -- Inventory Main Thread
 RegisterCommand('inventory', function()
-    if not isCrafting and not inInventory then
+    if not isCrafting then
         QBCore.Functions.GetPlayerData(function(PlayerData)
             if not PlayerData.metadata["isdead"] and not PlayerData.metadata["inlaststand"] and not PlayerData.metadata["ishandcuffed"] and not IsPauseMenuActive() then
                 local ped = PlayerPedId()
@@ -312,6 +307,11 @@ Citizen.CreateThread(function()
     end
 end)
 
+RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
+AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
+    --TriggerServerEvent("inventory:server:LoadDrops")
+end)
+
 RegisterNetEvent('inventory:server:RobPlayer')
 AddEventHandler('inventory:server:RobPlayer', function(TargetId)
     SendNUIMessage({
@@ -426,7 +426,7 @@ AddEventHandler("inventory:client:PickupSnowballs", function()
     local ped = PlayerPedId()
     LoadAnimDict('anim@mp_snowball')
     TaskPlayAnim(ped, 'anim@mp_snowball', 'pickup_snowball', 3.0, 3.0, -1, 0, 1, 0, 0, 0)
-    QBCore.Functions.Progressbar("pickupsnowball", "Collecting snowballs..", 1500, false, true, {
+    QBCore.Functions.Progressbar("pickupsnowball", "Sneeuwballen oprapen..", 1500, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -447,6 +447,27 @@ AddEventHandler("inventory:client:UseSnowball", function(amount)
     GiveWeaponToPed(ped, GetHashKey("weapon_snowball"), amount, false, false)
     SetPedAmmo(ped, GetHashKey("weapon_snowball"), amount)
     SetCurrentPedWeapon(ped, GetHashKey("weapon_snowball"), true)
+end)
+
+RegisterNUICallback("GiveItem", function(data, cb)
+    local player, distance = GetClosestPlayer()
+    if player ~= -1 and distance < 2.5 then
+        local playerPed = GetPlayerPed(player)
+        local playerId = GetPlayerServerId(player)
+        local plyCoords = GetEntityCoords(playerPed)
+        local pos = GetEntityCoords(GetPlayerPed(-1))
+        local dist = GetDistanceBetweenCoords(pos.x, pos.y, pos.z, plyCoords.x, plyCoords.y, plyCoords.z, true)
+        if dist < 2.5 then
+            SetCurrentPedWeapon(PlayerPedId(),'WEAPON_UNARMED',true)
+            TriggerServerEvent("inventory:server:GiveItem", playerId, data.inventory, data.item, data.amount)
+            print(data.amount)
+        else
+            QBCore.Functions.Notify("No one nearby!", "error")
+        end
+    else--[[MADE BY Ax is bro ther made by axis brother dream life roleplay ax is brother Axis#1672
+        fuck Indian Empire RolePlay Fuk You All Halka gorib you too!]]
+        QBCore.Functions.Notify("No one nearby!", "error")
+    end
 end)
 
 RegisterNetEvent("inventory:client:UseWeapon")
@@ -491,6 +512,69 @@ AddEventHandler("inventory:client:UseWeapon", function(weaponData, shootbool)
         end, CurrentWeaponData)
     end
 end)
+
+WeaponAttachments = {
+    ["WEAPON_SNSPISTOL"] = {
+        ["extendedclip"] = {
+            component = "COMPONENT_SNSPISTOL_CLIP_02",
+            label = "Extended Clip",
+            item = "pistol_extendedclip",
+        },
+    },
+    ["WEAPON_VINTAGEPISTOL"] = {
+        ["suppressor"] = {
+            component = "COMPONENT_AT_PI_SUPP",
+            label = "Suppressor",
+            item = "pistol_suppressor",
+        },
+        ["extendedclip"] = {
+            component = "COMPONENT_VINTAGEPISTOL_CLIP_02",
+            label = "Extended Clip",
+            item = "pistol_extendedclip",
+        },
+    },
+    ["WEAPON_MICROSMG"] = {
+        ["suppressor"] = {
+            component = "COMPONENT_AT_AR_SUPP_02",
+            label = "Suppressor",
+            item = "smg_suppressor",
+        },
+        ["extendedclip"] = {
+            component = "COMPONENT_MICROSMG_CLIP_02",
+            label = "Extended Clip",
+            item = "smg_extendedclip",
+        },
+        ["flashlight"] = {
+            component = "COMPONENT_AT_PI_FLSH",
+            label = "Flashlight",
+            item = "smg_flashlight",
+        },
+        ["scope"] = {
+            component = "COMPONENT_AT_SCOPE_MACRO",
+            label = "Scope",
+            item = "smg_scope",
+        },
+    },
+    ["WEAPON_MINISMG"] = {
+        ["extendedclip"] = {
+            component = "COMPONENT_MINISMG_CLIP_02",
+            label = "Extended Clip",
+            item = "smg_extendedclip",
+        },
+    },
+    ["WEAPON_COMPACTRIFLE"] = {
+        ["extendedclip"] = {
+            component = "COMPONENT_COMPACTRIFLE_CLIP_02",
+            label = "Extended Clip",
+            item = "rifle_extendedclip",
+        },
+        ["drummag"] = {
+            component = "COMPONENT_COMPACTRIFLE_CLIP_03",
+            label = "Drum Mag",
+            item = "rifle_drummag",
+        },
+    },
+}
 
 function FormatWeaponAttachments(itemdata)
     local attachments = {}
@@ -666,7 +750,7 @@ RegisterNUICallback('combineWithAnim', function(data)
         TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items[combineData.reward], 'add')
     end, function() -- Cancel
         StopAnimTask(ped, aDict, aLib, 1.0)
-        QBCore.Functions.Notify("Failed!", "error")
+        QBCore.Functions.Notify("Mislukt!", "error")
     end)
 end)
 
@@ -717,12 +801,6 @@ function IsBackEngine(vehModel)
         end
     end
     return false
-end
-
-function closeInventory()
-    SendNUIMessage({
-        action = "close",
-    })
 end
 
 function ToggleHotbar(toggle)

@@ -4,10 +4,9 @@ game 'gta5'
 description 'QB-Inventory'
 version '1.0.0'
 
-shared_scripts {
-	'config.lua',
+shared_scripts { 
 	'@qb-core/import.lua',
-	'@qb-weapons/config.lua'
+	'config.lua'
 }
 
 server_script 'server/main.lua'
@@ -27,5 +26,3 @@ files {
 	'html/attachment_images/*.png',
 	'html/*.ttf'
 }
-
-dependency 'qb-weapons'
