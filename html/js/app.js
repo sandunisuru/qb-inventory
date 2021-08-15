@@ -640,9 +640,11 @@ function updateweights($fromSlot, $toSlot, $fromInv, $toInv, $toAmount) {
     }
 
     $("#player-inv-weight").html("Weight: " + (parseInt(totalWeight) / 1000).toFixed(2) + " / " + (playerMaxWeight / 1000).toFixed(2));
+    $("#player-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeight) / 1000).toFixed(2)/ (playerMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeight) / 1000).toFixed(2)/ (playerMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
     if ($fromInv.attr("data-inventory").split("-")[0] != "itemshop" && $toInv.attr("data-inventory").split("-")[0] != "itemshop" && $fromInv.attr("data-inventory") != "crafting" && $toInv.attr("data-inventory") != "crafting") {
         $("#other-inv-label").html(otherLabel)
         $("#other-inv-weight").html("Weight: " + (parseInt(totalWeightOther) / 1000).toFixed(2) + " / " + (otherMaxWeight / 1000).toFixed(2))
+        $("#other-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
     }
 
     return true;
@@ -1424,6 +1426,7 @@ var requiredItemOpen = false;
         }
 
         $("#player-inv-weight").html("Weight: " + (totalWeight / 1000).toFixed(2) + " / " + (data.maxweight / 1000).toFixed(2));
+        $("#player-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeight) / 1000).toFixed(2)/ parseInt(playerMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeight) / 1000).toFixed(2)/ parseInt(playerMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
         playerMaxWeight = data.maxweight;
         if (data.other != null) 
         {
@@ -1433,12 +1436,14 @@ var requiredItemOpen = false;
             } else {
                 $("#other-inv-label").html(data.other.label)
                 $("#other-inv-weight").html("Weight: " + (totalWeightOther / 1000).toFixed(2) + " / " + (data.other.maxweight / 1000).toFixed(2))
+                $("#other-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
             }
             otherMaxWeight = data.other.maxweight;
             otherLabel = data.other.label;
         } else {
             $("#other-inv-label").html(Inventory.droplabel)
             $("#other-inv-weight").html("Weight: " + (totalWeightOther / 1000).toFixed(2) + " / " + (Inventory.dropmaxweight / 1000).toFixed(2))
+            $("#other-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeightOther) / 1000).toFixed(2)/ (otherMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
             otherMaxWeight = Inventory.dropmaxweight;
             otherLabel = Inventory.droplabel;
         }
@@ -1526,6 +1531,7 @@ var requiredItemOpen = false;
         });
 
         $("#player-inv-weight").html("Weight: " + (totalWeight / 1000).toFixed(2) + " / " + (data.maxweight / 1000).toFixed(2));
+        $("#player-weight-progress").html("<div class='progress'><div class='progress-bar bg-success' role='progressbar' style='width: " + (((parseInt(totalWeight) / 1000).toFixed(2)/ parseInt(playerMaxWeight / 1000).toFixed(2)) * 100) +"%' aria-valuenow='" + (((parseInt(totalWeight) / 1000).toFixed(2)/ parseInt(playerMaxWeight / 1000).toFixed(2)) * 100) + "'aria-valuemin='0' aria-valuemax='100'></div></div>");
 
         handleDragDrop();
     };
